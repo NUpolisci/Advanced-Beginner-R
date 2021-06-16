@@ -1,0 +1,422 @@
+---
+title: "R Workshop"
+author: "Max Weylandt and Pilar Manzi"
+date: "10/21/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Libraries
+
+These are the libraries (i.e. packages) we will be using throughout the document. If you don't have them installed yet, you can run this command on your *console*: 
+
+install.packages(c("readr","dplyr", "ggplot2", "stargazer"))
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(stargazer)
+```
+
+# Reading in the Data
+
+Anything can be stored as an object in R, and that includes datasets we load from outside. Using the `readr` library, we can use the `read_csv` function to read a csv file into R. The filename is "correlates_state.csv"
+
+```{r}
+
+```
+
+# Exploring the dataset 
+
+There are several useful commands for you to explore your data and get familiarized with it before getting to work. Some include `str()`, `names()`, `head()`, and `glimpse()`.
+
+```{r}
+
+```
+
+# Dplyr package
+
+This package contains multiple commands (eg. select, filter, mutate) that are great for manipulating data. Besides these commands, it has a very poweful tool called a **pipe**, which allows you to work with these commands much more efficiently. 
+
+The symbol for a pipe is %>% 
+
+For instance, the syntax for the `select` command, which we'll see below, is `select(name of dataset, variables selected)`
+
+With a pipe, we can transform this into: `name of dataset %>% select(variables selected)`
+
+You may not see the value of this yet, but when we combine multiple commands, it becomes incredibly useful. 
+
+# Select
+
+The `select` command allows us to choose certain **variables** from the dataset. This is particularly useful when we have a large dataset like this one. We can make a subset (smaller version) of it by selecting specific variables. 
+
+```{r}
+
+```
+
+*Note that we want to save the output of our operation into an object. Otherwise it will simply be output in the console and we won't be able to use the altered data as the input to functions later on!*
+
+We can select by name (`select(country, year)`), by position of the column(`select(c(1,3,6))`), or grab a range of columns (`select(country:year)` or `select(1:3)`). 
+
+Sometimes it's easier to remove one variable rather than selecting all the others (`select(-pop)`). There are also "select helpers" that make subsetting variables very easy: `one_of()`, `contains()`, `starts_with()`, `ends_with()`, `matches()`.
+
+
+# Filter
+
+Another useful command is `filter`. Instead of picking out whole columns (i.e. variables), it picks out **observations** that comply with a given condition. For instance, we can filter only the cases from 2011 on. 
+
+```{r eval= FALSE}
+data_filtered <- states_data %>% filter(year>2010)
+```
+
+
+*Note: by writing "eval = FALSE" in our chunk, we are telling markdown not to run this code, but to display it anyways.*
+
+We can also filter things that are **different from** a certain condition. 
+
+```{r}
+
+```
+
+In General, `filter()` accepts R'ls logical operators:
+
+| Operator  | Description               |
+|-----------|---------------------------|
+| <         | less than                 |
+| <=        | less than or equal to     |
+| ==        | exactly equal to          |
+| !=        | not equal to              |
+| !x        | Not x                     |
+| x & y     | x AND y                   |
+| x &#x7c;y | x OR y                    |
+| isTRUE(x) | test if X is TRUE         |
+
+
+# Pipes again
+
+As mentioned, we can string together a series of dplyr() commands using pipes. A pipe lets us perform multiple operations at once, without creating an object for each one of them.
+
+*(Note the keyboard shortcut: Ctrl+Shift+M)*
+
+```{r}
+
+
+```
+
+Notice how, by using pipes, we didn't have to create an object for our selected data and an object for our filtered data.
+
+# Mutate
+
+Often, we will need to create a new variable based on existing data. `Mutate` can help us do this. With `mutate`, we can transform a variable, like creating the log of expenditure:
+
+```{r eval= FALSE}
+states_final <- states_final %>% mutate(log_expend = log(edinstruct_expend_pstud))
+```
+
+`Mutate` can also be used to recode variables.  Based on the Nominate Score of state ideology (continuous, from 0 to 100), we can create a dummy variable that groups states into Liberal and Conservative: 
+
+```{r}
+
+
+```
+
+
+# Rename
+
+A function not covered in the slides is the `rename` function, which once more does what it says on the box. Note that the new name goes first, and then the old one -- this is basically like `mutate()`.
+
+
+```{r eval=FALSE}
+states_final <- states_final %>% rename(ideology = inst6014_nom,
+                        edu_expend = edinstruct_expend_pstud,
+                       poverty = povrate)
+```
+
+
+# Summarize 
+
+`summarise` reduces observations to a single value based on certain functions. These functions include the mean, standard deviation, minimun, maximum, etc. 
+
+For instance, let's take the mean of education expenditure: 
+
+```{r}
+
+
+```
+
+We can add other descriptive statistics:
+
+```{r eval = FALSE}
+states_final %>% summarise(mean_expend = mean(edinstruct_expend_pstud, na.rm = TRUE), sd_expend = sd(edinstruct_expend_pstud,na.rm = TRUE), min_expend = max(edinstruct_expend_pstud, na.rm = TRUE))
+```
+
+*Note that we are not saving an object here. We are simply displaying the results of the descriptive statistics.* 
+
+# Grouping
+
+Often we will want to analyze data across groups (regions, gender, age group, political party, etc.). We can use the `group_by` function for this. But it is most useful when used in conjunction with another command, such as `summarize`.
+
+Or we want to know the mean expenditure in education and mean poverty rate for Conservative versus Liberal states:
+
+```{r}
+
+```
+
+
+# Tables
+
+We likely won't have time to cover this in class, but you may want to have these tables outside of R as well! By default, tables look ok in Markdown. (You can look at `kable` for a quick way to make markdown tables look good, and `gt` for an endlessly customizable "grammar of tables"). 
+
+If you're working in a regular R script, the `stargazer`packages can do a lot for you with little work. When given a data frame, `stargazer()` automatically outputs a table featuring the summary statistics for all variables. If passed the argument `summary=FALSE`, it simply outputs the dataframe as is. Thus, after creating a summary table using dplyr (which is a tibble, not a dataframe) we simply convert it to a dataframe and hand it over to stargazer.
+
+```{r eval=FALSE}
+library(stargazer)
+stargazer(as.data.frame(my_table), summary = FALSE, type = "latex", out = "mytable.tex")
+```
+
+`stargazer` can provide html or latex code, simply provide copy-pasteable text, and even save the table to a separate file.
+
+
+# Ggplot
+
+GGplot is the R implementation of the "grammar of graphics". There are a few key components to this grammar:
+
+> In brief, the grammar tells us that a graphic maps the data to the aesthetic attributes (colour, shape, size) of geometric objects (points, lines, bars). The plot may also include statistical transformations of the data and information about the plot’s coordinate system. Facetting can be used to plot for different subsets of the data. The combination of these independent components are what make up a graphic. [Source](https://ggplot2-book.org/introduction.html)
+
+In the following chunks, pay attention to how you begin by specifying the data to work with, and then map different columns to various aesthetic components. 
+
+We can create practically any plot we want with ggplot, but we need to make sure that the type of graph we pick is the best to convey the information we want to communicate to our readers. 
+
+When we are dealing with categorical variables, bar graphs are best. Let's check how many observations we have per region:
+
+```{r eval= FALSE}
+ggplot(data = states_final)+
+  aes(x= region)+
+  geom_bar()
+```
+
+We can add some color to make it more aesthetically pleasing:
+
+```{r}
+
+```
+
+When dealing with continuous variables, histograms are best. Let's plot education expenditure:
+
+```{r eval=FALSE}
+ggplot(data = states_final)+
+  aes(x= edinstruct_expend_pstud)+
+  geom_histogram()
+```
+
+Density plots may be helpful in other cases: 
+
+```{r eval=FALSE}
+ggplot(data = states_final) +
+  aes(x= edinstruct_expend_pstud, fill = RedBlue) +
+  geom_density(alpha = 0.3 )
+```
+
+When plotting one continuous and one categorical variable, boxplots are a good option. 
+
+```{r eval=FALSE}
+ggplot(data = states_final) +
+  aes(x= RedBlue, y = edinstruct_expend_pstud) +
+  geom_boxplot()
+```
+
+
+When we want to plot change over time, we use line charts. Often you'll need to do some data manipulation beforehand. For instance, if we want to plot how poverty evolved over time across our whole dataset:
+
+```{r}
+
+```
+
+When dealing with two continuous variables, we can use scatter plots.
+
+Let's create a basic scatter plot between poverty rate and education expenditure:
+
+```{r}
+
+```
+
+Now let's add a regression line: 
+
+```{r}
+
+```
+
+Let's distinguish the Conservative and Liberal states to see if the pattern differs by ideology:
+
+```{r}
+
+
+```
+
+Regression line per group: 
+
+```{r}
+
+```
+
+We can incorporate other dplyr commands, like filter: 
+
+```{r eval=FALSE}
+states_final %>% filter(year==2005) %>% 
+ggplot(aes(x=edinstruct_expend_pstud, y=povrate, color= RedBlue)) +
+  geom_point() +
+  geom_smooth(method="lm")
+```
+
+
+# Graph Styling
+
+You can modify practically every aspect of your plot. Some of the most common and basic modifications include changing your axes labels and including a title.
+
+```{r eval=FALSE}
+ggplot(data = states_final) +
+  aes(x = edinstruct_expend_pstud, y = povrate, color = RedBlue) +
+  geom_point() +
+  geom_smooth(method="lm") + 
+  labs(title = "Poverty and Education Expenditure", x ="Education expenditure per student", y = "Poverty rate")
+
+```
+
+We can also play around with the label, like change the label title and position:
+
+```{r eval=FALSE}
+ggplot(data = states_final)+
+  aes(x=edinstruct_expend_pstud, y=povrate, color=RedBlue)+
+  geom_point()+
+  geom_smooth(method="lm") + 
+  labs(title = "Poverty and Education Expenditure", x ="Education expenditure per student", y = "Poverty rate", color = "Ideology") + 
+  theme(legend.position="bottom")
+```
+
+You may also be interested in changing the color patterns or the overall look of the graph. There are many options for that. First, ggplot has a built in theme_() option.
+
+```{r eval=FALSE}
+ggplot(data = states_final)+
+  aes(x=edinstruct_expend_pstud, y=povrate, color=RedBlue)+
+  geom_point()+
+  geom_smooth(method="lm") + 
+  labs(title = "Poverty and Education Expenditure", x ="Education expenditure per student", y = "Poverty rate") + 
+  theme_dark()
+```
+
+
+External packages like `ggthemr` and `ggthemes` contain even more option. For instance, check out the popular theme_economist from the ggthemes package: 
+
+```{r eval=FALSE}
+# install.packages("ggthemes")
+library(ggthemes)
+
+ggplot(data = states_final)+
+  aes(x=edinstruct_expend_pstud, y=povrate, color=RedBlue)+
+  geom_point()+
+  geom_smooth(method="lm") + 
+  labs(title = "Poverty and Education Expenditure", x ="Education expenditure per student", y = "Poverty rate") +
+  theme_economist()
+```
+
+Other packages, like RColorBrewr, allow you to change the color palette of your graphs. 
+
+# A Note on Color
+
+When picking colors, we should be mindful of color blindness. The packages `colorblindr` and `RColorBrewr` can help us with this. 
+
+`colorblindr` allows us to see how graphs are seen according to different color-vision deficiencies. 
+
+```{r eval=FALSE}
+library(colorblindr)
+
+example_plot <-
+ggplot(data = states_final)+
+  aes(x= edinstruct_expend_pstud, fill=RedBlue)+
+  geom_density(alpha=0.3 )
+
+
+cvd_grid(example_plot)
+
+```
+
+
+With `RColorBrewer` you can see which pallettes are color-blind friendly: 
+```{r eval=FALSE}
+library(RColorBrewer)
+
+display.brewer.all(colorblindFriendly = TRUE)
+```
+
+
+# Facetting
+
+Say we want to see the scatter plot separately for Conservative and Liberal states: 
+
+```{r}
+
+```
+
+*Note: In some cases, `facet_grid` may be preferred over `facet_wrap`.* 
+
+# Combining plots 
+
+When you need to combine different plots into the same grid, the package `cowplot` comes in handy. First, you need to save your graphs as objects and then you can combine them into one.
+
+```{r eval=FALSE}
+#install.packages("cowplot")
+library(cowplot)
+
+plot1 <- states_final %>% filter(year==2005) %>% 
+ggplot(aes(x=edinstruct_expend_pstud, y=povrate, color= RedBlue))+
+  geom_point()+
+  geom_smooth(method="lm")
+
+plot2<- ggplot(data = states_final)+
+  aes(x= edinstruct_expend_pstud, fill=RedBlue)+
+  geom_density(alpha=0.3 )
+
+plot3 <- states_final %>% group_by(year) %>% summarize(mean_pov = mean(povrate)) %>% ggplot(aes(x= year, y=mean_pov))+
+  geom_line()
+
+plot_grid(plot1, plot2, plot3, ncol=2, nrow=2)
+
+```
+
+# Saving plots 
+
+There are several options to save graphs, but one of the most efficient is using `ggsave`, which will save the picture to your files. It is simply done by adding an additional layer to your graph:
+
+```{r eval=FALSE}
+plot_final <- ggplot(data = states_final)+
+  aes(x=edinstruct_expend_pstud, y=povrate, color=RedBlue)+
+  geom_point()+
+  geom_smooth(method="lm") + 
+  labs(title = "Poverty and Education Expenditure", x ="Education expenditure per student", y = "Poverty rate", color = "Ideology") +
+  theme_economist() +
+  ggsave("Poverty and expenditure.png")
+
+```
+
+
+mean=11.6
+n=1399
+sd=15.02
+sd2 = 14.5
+m2 = 10.5
+n2 = 1019
+diff = mean - m2
+df = n+n2-2
+t = qt(.975, df)
+
+se = (((((n-1)*sd^2)+((n2-1)*sd2^2)))/df)^0.5*(1/n+1/n2)^0.5
+tstat=(mean-m2)/se
+tstat
+
+diff+(t*SE)
+diff-(t*SE)
+
