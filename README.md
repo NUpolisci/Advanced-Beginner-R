@@ -4,10 +4,10 @@ For this workshop, you will need to have R, R Studio and Latex installed in your
 
 ### Download R: https://www.r-project.org/
 ### Download R Studio: https://rstudio.com/products/rstudio/
-### Download Latex: in your R Studio console type: 
+### Download Latex: ... In your R Studio console type: 
  
-install.packages('tinytex')
-tinytex::install_tinytex() 
+`install.packages('tinytex')`
+`tinytex::install_tinytex()`
 
 In addition, please create a new folder in your computer and download all the contents there. 
 
